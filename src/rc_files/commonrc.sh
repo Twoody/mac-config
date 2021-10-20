@@ -97,29 +97,10 @@ arc () {
 	fi
 }
 
-### Execute an sqlite3 file on a given db
-sql3_exec () {
-	# TODO: Ensure that $1 is a db
-	# TODO: Ensure that $2 is a .sql file
-	# TODO: Probably store a backup...
-	# TODO: write a  --help flag
-	sqlite3 $1 ".read $2"
-	true
-}
-
 ### Replace all spaces with underscores within parent
 strip-spaces () {
 	find . -depth -name '* *' \
 	| while IFS= read -r f ; do mv -i "$f" "$(dirname "$f")/$(basename "$f"|tr ' ' _)" ; done
-}
-
-## Ensure that git hook messages are not suppressed by arcanist
-arc () {
-	if [ -f .git/hooks/post-checkout ] && [[ $1 == "patch" ]]; then
-		command arc "$@" && sh ./.git/hooks/post-checkout
-	else
-		command arc "$@"
-	fi
 }
 
 search-replace () {
@@ -134,4 +115,44 @@ sql3-exec () {
   # TODO: write a  --help flag
   sqlite3 $1 ".read $2"
   true
+}
+
+### Get the latest file by timestamp
+# @param $1 - Target dir
+get-newest-in-dir ()
+{
+	RET="$(ls $1 | sort -n -t _ -k 2 | tail -1)"
+	#printf "\t\t$RET\n\n"
+	echo "$RET"
+}
+
+### Upgrade file if not match to newest file in target dir
+# $1 target directory to either be saved or written over
+# $2 target directory to parse against
+upgrade-file-on-no-match ()
+{
+  LATEST_FILE=$(get-newest-in-dir $1)
+  printf "$LATEST_FILE\n\n"
+  printf "starting...\n"
+  if [ ! -d $1 ];
+  then
+	  printf "\tDIRECTORY $1 DOES NOT EXIST; ABORT 1\n"
+	  return 1
+  fi
+  if [ ! -d $2 ];
+  then
+	  printf "\tDIRECTORY $2 DOES NOT EXIST; ABORT 2\n"
+	  return 2
+  fi
+  if [ -f $2/$LATEST_FILE ];
+  then
+	  printf "\tFILE $LATEST_FILE already exists\n"
+	  return 3
+  else
+	  printf "\tFILE MGMT ON $LATEST_FILE\n"
+	  # Probs dont want to copy 2GBs over routinely
+	  #cp -a $2/* ~/.attic/
+	  cp $1/$LATEST_FILE $2/
+	  return 0
+  fi
 }
