@@ -21,6 +21,8 @@ alias lsd="du -h | sort -n -r"           ## List all contents in dir by file siz
 alias hgrep="history | grep "
 alias bhist="vim ~/.bash_history"
 alias zhist="vim ~/.zsh_history"
+alias commonrc="vim ~/install-scripts/src/rc_files/commonrc.sh"
+alias gitrc="vim ~/install-scripts/src/rc_files/gitrc.sh"
 alias brc="vim ~/install-scripts/src/rc_files/.bashrc"
 alias vrc="vim ~/install-scripts/src/rc_files/.vimrc"
 alias zrc="vim ~/install-scripts/src/rc_files/.zshrc"
@@ -30,6 +32,7 @@ alias zrc-local="vim ~/.zshrc"
 alias sbrc="source ~/install-scripts/src/rc_files/sources && source ~/.bashrc"
 alias szrc="source ~/install-scripts/src/rc_files/sources && source ~/.zshrc"
 alias myip="ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'"
+alias wanip4='dig @resolver4.opendns.com myip.opendns.com +short -4'
 alias update-fork="git fetch upstream && git checkout master && git merge upstream/master"
 alias get-devices="arp -a"
 
