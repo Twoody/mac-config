@@ -36,6 +36,9 @@ alias wanip4='dig @resolver4.opendns.com myip.opendns.com +short -4'
 alias update-fork="git fetch upstream && git checkout master && git merge upstream/master"
 alias get-devices="arp -a"
 
+# Get weather locally
+alias get-weather="curl wttr.in"
+
 ### Fun
 alias shrug="echo '¯\_(ツ)_/¯'";
 alias fight="echo '(ง'̀-'́)ง'";
