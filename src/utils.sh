@@ -63,23 +63,22 @@ make_dir ()
 # @return {int} 0 if confirming/accepting; Else 1
 make_confirmation ()
 {
-	 while true; do
-    read -p "$1 (Y/N): " confirm
-    case $confirm in 
+    printf "$1 (Y/N): \n"
+    read confirm
+    case $confirm in
       [yY]*)
         printf "\t$2\n"
-		  return 0
-  		  break
-  		;;
+        return 0
+      ;;
       [nN]*)
         printf "\t$3\n"
-		  return 1
-  		  break
-  		;;
+        return 1
+        break
+      ;;
       *)
         printf "\tBAD INPUT: Try again;\n"
+        make_confirmation $1 $2 $3
     esac
-  done
 }
 
 # Install an oh-my-zsh theme powerlevel9k
