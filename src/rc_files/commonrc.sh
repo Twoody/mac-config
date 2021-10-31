@@ -93,7 +93,7 @@ gvue () {
 
 ### Very Liberal Search for somethign that looks like what we want ###
 search () {
-	find . -iname *$1*
+	find . -iname "*$1*"
 	true
 }
 
