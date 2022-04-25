@@ -14,6 +14,7 @@ alias gl='git log --stat'
 alias gm='git merge' 
 alias gp='git pull' 
 #alias gch='git checkout' 
+alias gchl='git checkout @{-1}' 
 alias gitreset='git reset --hard head' 
 
 ### Get the changes done by a Git commit ##
