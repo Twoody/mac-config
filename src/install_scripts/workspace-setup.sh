@@ -18,17 +18,6 @@ has_general_setup ()
 
   source $CONSTANTS_FILE
   source $UTILS
-
-  printf "CHECKING vpn AND wifi  CONNECTION...\n"
-  needs_vpn_connection
-  NEEDS_VPN=$?
-  if [ $NEEDS_VPN -ne 0 ];
-  then
-    printf "ERROR: Please connect to the vpn or wifi\n"
-    return 1
-  fi
-  printf "\tConnection okay\n"
-
   return 0
 }
 
