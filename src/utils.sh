@@ -87,37 +87,3 @@ force_powerlevel10k ()
   sed -i -e 's/ZSH_THEME=.*$/ZSH_THEME="powerlevel10k\/powerlevel10k"/g' ~/.zshrc
 }
 
-# Log messages inside a function
-log_message() {
-  local log_dir="$1"
-  local log_prefix="$2"
-  local message="$3"
-
-  # Ensure the log directory exists
-  mkdir -p "$log_dir"
-
-  # Create a timestamped log file
-  local timestamp=$(date +%Y%m%d%H%M%S)
-  local log_file="${log_dir}/${log_prefix}_${timestamp}.log"
-
-  # Write the message to the log file
-  echo "$message" > "$log_file"
-  echo "$log_file"  # Return the created log file path
-}
-
-# Garbage collection inside a function
-garbage_collect_logs() {
-  local log_dir="$1"
-  local max_files="$2"
-
-  # Ensure the directory exists
-  [ -d "$log_dir" ] || return
-
-  # Count the number of files in the directory
-  local file_count=$(ls "$log_dir" | wc -l)
-
-  # If the number of files exceeds the limit, delete the oldest
-  if (( file_count > max_files )); then
-    ls -t "$log_dir" | tail -n +$((max_files + 1)) | xargs -I {} rm -f "$log_dir/{}"
-  fi
-
