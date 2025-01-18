@@ -10,7 +10,7 @@ alias gim="vim"
 ### Most convenient aliases
 alias c='clear && ls && echo -e "\n" && gs'
 
-alias findy='find . -name'
+alias findy='find . -iname'
 alias hosts="vim /etc/hosts/"
 # Might need mogrify
 #alias make-pngs="find . -name "*.jpg" -exec mogrify -format png {} \;"
