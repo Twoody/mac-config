@@ -156,3 +156,80 @@ upgrade-file-on-no-match ()
 	  return 0
   fi
 }
+
+# @parm $1 {string} filepath - Path to a txt file that contains the whole prompt
+# @retunrs {string} - The first ChatGPT reply from the Open AI route response
+# @todo Move over to `install scripts` so it is version controlled;
+# @todo Read the `key` from env or hidden file in the home directory
+function chatgpt() {
+  OPENAI_KEY="todo: get from working home directory"
+  OPENAI_MODEL="gpt-4"
+  FILEPATH="$1"
+
+  # Check if the file exists
+  if [[ ! -f "$FILEPATH" ]]; then
+    echo "Error: File not found: $FILEPATH"
+    return 1
+  fi
+
+  # Read the file content
+  QUESTION="$(<"$FILEPATH")"
+
+  # Sanitize slashes, quotes, and newlines
+  QUESTION=$(echo "$QUESTION" | 
+  awk 'BEGIN { ORS="" } {
+      gsub(/\\/, "\\\\");  # Escape backslashes
+      gsub(/"/, "\\\"");  # Escape double quotes
+      gsub(/\n/, "\\n");  # Convert newlines to \n
+      gsub(/\"\"\"/, "\\\"\\\"\\\"");  # Escape triple quotes explicitly
+      print
+    }'
+  )
+
+  # Build the JSON payload
+  JSON_PAYLOAD=$(cat <<EOF
+{
+  "model": "$OPENAI_MODEL",
+  "messages": [{"role": "user", "content": "$QUESTION"}]
+}
+EOF
+)
+
+  # Validate the JSON payload
+  if ! echo "$JSON_PAYLOAD" | jq . > /dev/null 2>&1; then
+    echo "Error: Invalid JSON payload. Check your input file for problematic content."
+    echo "$JSON_PAYLOAD" > debug_invalid_payload.json
+    return 1
+  fi
+
+  # Debugging step: Save the valid payload for inspection
+  echo "$JSON_PAYLOAD" > debug_valid_payload.json
+
+  # Send the content to the OpenAI API and preprocess the response
+  RAW_RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENAI_KEY" \
+    -d "$JSON_PAYLOAD")
+
+  # Clean the raw response to remove invalid characters
+  CLEAN_RESPONSE=$(echo "$RAW_RESPONSE" | tr -d '\000-\037')
+
+  # Validate and parse the cleaned response
+  if echo "$CLEAN_RESPONSE" | jq -e . >/dev/null 2>&1; then
+    # Extract content from the response
+    MESSAGE_CONTENT=$(echo "$CLEAN_RESPONSE" | jq -r '.choices[0].message.content')
+
+    # Handle empty content
+    if [[ -z "$MESSAGE_CONTENT" ]]; then
+      echo "Error: API returned an empty response."
+      echo "$CLEAN_RESPONSE" > debug_response.json
+      return 1
+    fi
+
+    echo "$MESSAGE_CONTENT"
+  else
+    echo "Error: Invalid API response. Check debug_response.json for details."
+    echo "$CLEAN_RESPONSE" > debug_response.json
+    return 1
+  fi
+}
