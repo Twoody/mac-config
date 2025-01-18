@@ -156,23 +156,70 @@ upgrade-file-on-no-match ()
 	  return 0
   fi
 }
+#
+# Log messages inside a function
+log_message() {
+  local log_dir="$1"
+  local log_prefix="$2"
+  local message="$3"
+
+  # Ensure the log directory exists
+  mkdir -p "$log_dir"
+
+  # Create a timestamped log file
+  local timestamp=$(date +%Y%m%d%H%M%S)
+  local log_file="${log_dir}/${log_prefix}_${timestamp}.log"
+
+  # Write the message to the log file
+  echo "$message" > "$log_file"
+  echo "$log_file"  # Return the created log file path
+}
+
+# Garbage collection inside a function
+garbage_collect_logs() {
+  local log_dir="$1"
+  local max_files="$2"
+
+  # Ensure the directory exists
+  [ -d "$log_dir" ] || return
+
+  # Count the number of files in the directory
+  local file_count=$(ls "$log_dir" | wc -l)
+
+  # If the number of files exceeds the limit, delete the oldest
+  if (( file_count > max_files )); then
+    ls -t "$log_dir" | tail -n +$((max_files + 1)) | xargs -I {} rm -f "$log_dir/{}"
+  fi
+}
 
 # @parm $1 {string} filepath - Path to a txt file that contains the whole prompt
 # @retunrs {string} - The first ChatGPT reply from the Open AI route response
-# @todo Move over to `install scripts` so it is version controlled;
-# @todo Read the `key` from env or hidden file in the home directory
 function chatgpt() {
-  OPENAI_KEY="todo: get from working home directory"
-  OPENAI_MODEL="gpt-4"
-  FILEPATH="$1"
+  # Paths and configuration
+  KEY_FILE="$HOME/.chatgpt-tanner/key.txt"
+  DEBUG_DIR="$HOME/.chatgpt-tanner/debugs"
+  MAX_DEBUG_FILES=100  # Maximum number of debug files to retain
 
-  # Check if the file exists
+  # Ensure the key file exists
+  if [[ ! -f "$KEY_FILE" ]]; then
+    echo "Error: API key file not found at $KEY_FILE"
+    return 1
+  fi
+
+  # Read the API key from the key file
+  OPENAI_KEY=$(<"$KEY_FILE")
+
+  # Ensure the debug directory exists
+  mkdir -p "$DEBUG_DIR"
+
+  # Check if the input file exists
+  FILEPATH="$1"
   if [[ ! -f "$FILEPATH" ]]; then
     echo "Error: File not found: $FILEPATH"
     return 1
   fi
 
-  # Read the file content
+  # Read the input file content
   QUESTION="$(<"$FILEPATH")"
 
   # Sanitize slashes, quotes, and newlines
@@ -189,7 +236,7 @@ function chatgpt() {
   # Build the JSON payload
   JSON_PAYLOAD=$(cat <<EOF
 {
-  "model": "$OPENAI_MODEL",
+  "model": "gpt-4",
   "messages": [{"role": "user", "content": "$QUESTION"}]
 }
 EOF
@@ -197,13 +244,16 @@ EOF
 
   # Validate the JSON payload
   if ! echo "$JSON_PAYLOAD" | jq . > /dev/null 2>&1; then
+    TIMESTAMP=$(date +%Y%m%d%H%M%S)
     echo "Error: Invalid JSON payload. Check your input file for problematic content."
-    echo "$JSON_PAYLOAD" > debug_invalid_payload.json
+    echo "$JSON_PAYLOAD" > "$DEBUG_DIR/debug_invalid_payload_${TIMESTAMP}.json"
+    garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
     return 1
   fi
 
-  # Debugging step: Save the valid payload for inspection
-  echo "$JSON_PAYLOAD" > debug_valid_payload.json
+  # Save the valid payload for inspection
+  TIMESTAMP=$(date +%Y%m%d%H%M%S)
+  echo "$JSON_PAYLOAD" > "$DEBUG_DIR/debug_valid_payload_${TIMESTAMP}.json"
 
   # Send the content to the OpenAI API and preprocess the response
   RAW_RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
@@ -211,25 +261,33 @@ EOF
     -H "Authorization: Bearer $OPENAI_KEY" \
     -d "$JSON_PAYLOAD")
 
+  # Save the raw response
+  echo "$RAW_RESPONSE" > "$DEBUG_DIR/debug_response_${TIMESTAMP}.json"
+
   # Clean the raw response to remove invalid characters
   CLEAN_RESPONSE=$(echo "$RAW_RESPONSE" | tr -d '\000-\037')
 
   # Validate and parse the cleaned response
   if echo "$CLEAN_RESPONSE" | jq -e . >/dev/null 2>&1; then
-    # Extract content from the response
     MESSAGE_CONTENT=$(echo "$CLEAN_RESPONSE" | jq -r '.choices[0].message.content')
 
     # Handle empty content
     if [[ -z "$MESSAGE_CONTENT" ]]; then
       echo "Error: API returned an empty response."
-      echo "$CLEAN_RESPONSE" > debug_response.json
+      echo "$CLEAN_RESPONSE" > "$DEBUG_DIR/debug_empty_response_${TIMESTAMP}.json"
+      garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
       return 1
     fi
 
+    # Output the message content
     echo "$MESSAGE_CONTENT"
   else
-    echo "Error: Invalid API response. Check debug_response.json for details."
-    echo "$CLEAN_RESPONSE" > debug_response.json
+    echo "Error: Invalid API response. Check debug_response_${TIMESTAMP}.json for details."
+    echo "$CLEAN_RESPONSE" > "$DEBUG_DIR/debug_invalid_response_${TIMESTAMP}.json"
+    garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
     return 1
   fi
+
+  # Perform garbage collection on the debug directory
+  garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
 }
