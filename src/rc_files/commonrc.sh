@@ -46,7 +46,7 @@ alias fight="echo '(ง'̀-'́)ง'";
 ### Show just the directories contained in current dir;
 alias folders='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn'
 
-### ### ### TRAVERSAL ALIASES ### ### ### 
+### ### ### TRAVERSAL ALIASES ### ### ###
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
@@ -54,7 +54,7 @@ alias .....="cd ../../../.."
 
 ### Docker
 alias dockup="docker-compose --compatibility up --force-recreate"
-alias dockpatch="docker-compose pull && docker-compsoe build --pull"
+alias dockpatch="docker-compose pull && docker-compose build --pull"
 alias dockdown="docker-compose down --remove-orphans"
 
 ### Misc
@@ -95,15 +95,6 @@ gvue () {
 search () {
 	find . -iname "*$1*"
 	true
-}
-
-### Ensure that git hook messages are not suppressed by arcanist
-arc () {
-	if [ -f .git/hooks/post-checkout ] && [[ $1 == "patch" ]]; then
-		command arc "$@" && sh ./.git/hooks/post-checkout
-	else
-		command arc "$@"
-	fi
 }
 
 ### Replace all spaces with underscores within parent
