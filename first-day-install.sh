@@ -30,7 +30,6 @@ fi
 source $CONSTANTS_FILE
 source $UTILS
 source $VIM_INSTALL
-source $PRECOA_INSTALL
 source $PROGRAMS_INSTALL
 source $APPLICATIONS_INSTALL
 
@@ -60,11 +59,6 @@ then
   install_programs
   install_applications
 
-  # Precoa specific
-  setup_hosts
-  setup_projects
-  setup_dependencies
-  setup_arcanist
 else
   printf "\nENDING first-day-install CAUSE NOT PROPERLY SETUP\n"
 fi
