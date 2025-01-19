@@ -222,25 +222,23 @@ function chatgpt() {
   # Read the input file content
   QUESTION="$(<"$FILEPATH")"
 
-  # Sanitize slashes, quotes, and newlines
-  QUESTION=$(echo "$QUESTION" | 
-  awk 'BEGIN { ORS="" } {
-      gsub(/\\/, "\\\\");  # Escape backslashes
-      gsub(/"/, "\\\"");  # Escape double quotes
-      gsub(/\n/, "\\n");  # Convert newlines to \n
-      gsub(/\"\"\"/, "\\\"\\\"\\\"");  # Escape triple quotes explicitly
-      print
-    }'
-  )
+  # Escape the content safely for JSON
+  #ESCAPED_QUESTION=$(printf '%s' "$QUESTION" | jq -Rsa .)
+  ESCAPED_QUESTION=$(node -e "const fs = require('fs'); const data = fs.readFileSync('$FILEPATH', 'utf-8'); console.log(JSON.stringify(data));")
 
-  # Build the JSON payload
-  JSON_PAYLOAD=$(cat <<EOF
-{
-  "model": "gpt-4",
-  "messages": [{"role": "user", "content": "$QUESTION"}]
-}
-EOF
-)
+BAR="const fs = require(\"fs\"); const content = fs.readFileSync(\"$FILEPATH\", \"utf8\").trim().replace(/[\u0000-\u001F]/g, char => '\\\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')); console.log(JSON.stringify({ model: \"gpt-4\", messages: [{ role: \"user\", content }] }));"
+
+#  BAR="const fs = require(\"fs\"); const content = fs.readFileSync(\"$FILEPATH\", \"utf8\").trim()
+#   .replace(/\\\\/g, '\\\\\\\\')  // Escape backslashes
+#   .replace(/\"/g, '\\\\\"')      // Escape double quotes
+#   .replace(/[\u0000-\u001F]/g, char => '\\\\u' + char.charCodeAt(0).toString(16).padStart(4, '0'));
+#   console.log(JSON.stringify({ model: \"gpt-4\", messages: [{ role: \"user\", content }] }));"
+
+  JSON_PAYLOAD=$(node -e $BAR)
+
+
+  echo $BAR > out.txt
+  echo $JSON_PAYLOAD > out.json
 
   # Validate the JSON payload
   if ! echo "$JSON_PAYLOAD" | jq . > /dev/null 2>&1; then
