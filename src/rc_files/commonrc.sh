@@ -194,6 +194,7 @@ garbage_collect_logs() {
 
 # @parm $1 {string} filepath - Path to a txt file that contains the whole prompt
 # @retunrs {string} - The first ChatGPT reply from the Open AI route response
+
 function chatgpt() {
   # Paths and configuration
   KEY_FILE="$HOME/.chatgpt-tanner/key.txt"
@@ -223,25 +224,22 @@ function chatgpt() {
   QUESTION="$(<"$FILEPATH")"
 
   # Escape the content safely for JSON
-  #ESCAPED_QUESTION=$(printf '%s' "$QUESTION" | jq -Rsa .)
   ESCAPED_QUESTION=$(node -e "const fs = require('fs'); const data = fs.readFileSync('$FILEPATH', 'utf-8'); console.log(JSON.stringify(data));")
 
-BAR="const fs = require(\"fs\"); const content = fs.readFileSync(\"$FILEPATH\", \"utf8\").trim().replace(/[\u0000-\u001F]/g, char => '\\\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')); console.log(JSON.stringify({ model: \"gpt-4\", messages: [{ role: \"user\", content }] }));"
+  local fs="'fs'"
+  local utf="'utf8'"
+  local gpt="'gpt-4'"
+  local user="'user'"
+  local filepath="'$FILEPATH'"
+  BAR="const fs = require($fs); const content = fs.readFileSync($filepath, $utf).trim().replace(/[\u0000-\u001F]/g, char => '\\\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')); console.log(JSON.stringify({ model: $gpt, messages: [{ role: $user, content }] }));"
 
-#  BAR="const fs = require(\"fs\"); const content = fs.readFileSync(\"$FILEPATH\", \"utf8\").trim()
-#   .replace(/\\\\/g, '\\\\\\\\')  // Escape backslashes
-#   .replace(/\"/g, '\\\\\"')      // Escape double quotes
-#   .replace(/[\u0000-\u001F]/g, char => '\\\\u' + char.charCodeAt(0).toString(16).padStart(4, '0'));
-#   console.log(JSON.stringify({ model: \"gpt-4\", messages: [{ role: \"user\", content }] }));"
+  JSON_PAYLOAD=$(node -e "$BAR")
 
-  JSON_PAYLOAD=$(node -e $BAR)
-
-
-  echo $BAR > out.txt
-  echo $JSON_PAYLOAD > out.json
+  echo "$BAR" > out.txt
+  echo "$JSON_PAYLOAD" > out.json
 
   # Validate the JSON payload
-  if ! echo "$JSON_PAYLOAD" | jq . > /dev/null 2>&1; then
+  if ! echo "$JSON_PAYLOAD" | yq eval '.' - > /dev/null 2>&1; then
     TIMESTAMP=$(date +%Y%m%d%H%M%S)
     echo "Error: Invalid JSON payload. Check your input file for problematic content."
     echo "$JSON_PAYLOAD" > "$DEBUG_DIR/debug_invalid_payload_${TIMESTAMP}.json"
@@ -259,32 +257,24 @@ BAR="const fs = require(\"fs\"); const content = fs.readFileSync(\"$FILEPATH\", 
     -H "Authorization: Bearer $OPENAI_KEY" \
     -d "$JSON_PAYLOAD")
 
+  echo "$RAW_RESPONSE" > response.txt
+
   # Save the raw response
   echo "$RAW_RESPONSE" > "$DEBUG_DIR/debug_response_${TIMESTAMP}.json"
 
-  # Clean the raw response to remove invalid characters
-  CLEAN_RESPONSE=$(echo "$RAW_RESPONSE" | tr -d '\000-\037')
+  # Extract the "content" field using yq
+  MESSAGE_CONTENT=$(echo "$RAW_RESPONSE" | yq eval '.choices[0].message.content' -)
 
-  # Validate and parse the cleaned response
-  if echo "$CLEAN_RESPONSE" | jq -e . >/dev/null 2>&1; then
-    MESSAGE_CONTENT=$(echo "$CLEAN_RESPONSE" | jq -r '.choices[0].message.content')
-
-    # Handle empty content
-    if [[ -z "$MESSAGE_CONTENT" ]]; then
-      echo "Error: API returned an empty response."
-      echo "$CLEAN_RESPONSE" > "$DEBUG_DIR/debug_empty_response_${TIMESTAMP}.json"
-      garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
-      return 1
-    fi
-
-    # Output the message content
-    echo "$MESSAGE_CONTENT"
-  else
-    echo "Error: Invalid API response. Check debug_response_${TIMESTAMP}.json for details."
-    echo "$CLEAN_RESPONSE" > "$DEBUG_DIR/debug_invalid_response_${TIMESTAMP}.json"
+  # Handle empty content
+  if [[ -z "$MESSAGE_CONTENT" ]]; then
+    echo "Error: API returned an empty response."
+    echo "$RAW_RESPONSE" > "$DEBUG_DIR/debug_empty_response_${TIMESTAMP}.json"
     garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
     return 1
   fi
+
+  # Output the message content
+  echo "$MESSAGE_CONTENT"
 
   # Perform garbage collection on the debug directory
   garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
