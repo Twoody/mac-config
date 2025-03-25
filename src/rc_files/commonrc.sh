@@ -84,7 +84,7 @@ extract () {
 }
 
 ### Get grep results for vue build ###
-gvue () {
+function gvue () {
 	# Skip over node_modules/ and .git/ + Follow sylinks on recursion;
 	#grep --exclude-dir={node_modules,.git} -Ri "$1" ./src/
    grep --exclude-dir={node_modules,.git} -Ri "$1" ./
@@ -92,23 +92,23 @@ gvue () {
 }
 
 ### Very Liberal Search for somethign that looks like what we want ###
-search () {
+function search () {
 	find . -iname "*$1*"
 	true
 }
 
 ### Replace all spaces with underscores within parent
-strip-spaces () {
+function strip_spaces () {
 	find . -depth -name '* *' \
 	| while IFS= read -r f ; do mv -i "$f" "$(dirname "$f")/$(basename "$f"|tr ' ' _)" ; done
 }
 
-search-replace () {
+function search_replace () {
 	perl -i -pe 's/$1/$2/g' $3
 }
 
 ### Execute an sqlite3 file on a given db
-sql3-exec () {
+function sql3_exec () {
   # TODO: Ensure that $1 is a db
   # TODO: Ensure that $2 is a .sql file
   # TODO: Probably store a backup...
@@ -119,7 +119,7 @@ sql3-exec () {
 
 ### Get the latest file by timestamp
 # @param $1 - Target dir
-get-newest-in-dir ()
+function get_newest_in_dir ()
 {
 	RET="$(ls $1 | sort -n -t _ -k 2 | tail -1)"
 	#printf "\t\t$RET\n\n"
@@ -129,7 +129,7 @@ get-newest-in-dir ()
 ### Upgrade file if not match to newest file in target dir
 # $1 target directory to either be saved or written over
 # $2 target directory to parse against
-upgrade-file-on-no-match ()
+function upgrade_file_on_no_match ()
 {
   LATEST_FILE=$(get-newest-in-dir $1)
   printf "$LATEST_FILE\n\n"
@@ -158,7 +158,7 @@ upgrade-file-on-no-match ()
 }
 #
 # Log messages inside a function
-log_message() {
+function log_message() {
   local log_dir="$1"
   local log_prefix="$2"
   local message="$3"
@@ -176,7 +176,7 @@ log_message() {
 }
 
 # Garbage collection inside a function
-garbage_collect_logs() {
+function garbage_collect_logs() {
   local log_dir="$1"
   local max_files="$2"
 
