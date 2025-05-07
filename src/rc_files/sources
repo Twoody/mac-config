@@ -2,4 +2,3 @@ source ~/install-scripts/src/rc_files/gitrc.sh
 source ~/install-scripts/src/rc_files/commonrc.sh
 source ~/install-scripts/src/rc_files/colorsrc.sh
 source ~/install-scripts/src/rc_files/.profile
-

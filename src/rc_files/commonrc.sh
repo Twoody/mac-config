@@ -9,6 +9,7 @@ alias gim="vim"
 
 ### Most convenient aliases
 alias c='clear && ls && echo -e "\n" && gs'
+alias clint='clear && ls && echo -e "\n" && npm run lint && echo -e "\n" && gs'
 
 alias findy='find . -iname'
 alias hosts="vim /etc/hosts/"
@@ -27,6 +28,7 @@ alias brc="vim ~/install-scripts/src/rc_files/.bashrc"
 alias vrc="vim ~/install-scripts/src/rc_files/.vimrc"
 alias zrc="vim ~/install-scripts/src/rc_files/.zshrc"
 alias brc-local="vim ~/.bashrc"
+alias profile-local="vim ~/.profile"
 alias vrc-local="vim ~/.vimrc"
 alias zrc-local="vim ~/.zshrc"
 alias sbrc="source ~/install-scripts/src/rc_files/sources && source ~/.bashrc"
@@ -56,6 +58,10 @@ alias .....="cd ../../../.."
 alias dockup="docker-compose --compatibility up --force-recreate"
 alias dockpatch="docker-compose pull && docker-compose build --pull"
 alias dockdown="docker-compose down --remove-orphans"
+alias dpsa='(echo "CONTAINER ID,IMAGE,COMMAND,STATUS,PORTS,NAMES" && docker ps -a --format "{{.ID}},{{.Image}},{{.Command}},{{.Status}},{{.Ports}},{{.Names}}")'
+alias dockstop='docker stop $(docker ps -q)'
+alias dockrm='docker rm $(docker ps -aq)'
+
 
 ### Misc
 alias art="php artisan"
