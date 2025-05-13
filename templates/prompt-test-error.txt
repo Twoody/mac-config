@@ -1,0 +1,60 @@
+Hello ChatGPT,
+
+I have a **Source File** that I will provide below. I also have a **Test File** and 
+an associated **Test Error** message. Please review all of them carefully.
+
+## Source File
+```
+```
+
+## Test File
+```
+```
+
+## Test Error:
+```
+```
+
+## Additional Information
+```
+- The project is developed with:
+  - vite
+  - vitest
+  - vue3
+  - vue-router
+  - vuex
+- We use Firebase for:
+  - hosting
+  - Firestore database transactions
+  - analytics
+- Main dependencies:
+  - Luxon for date/time
+  - a front-end library called "teahub" (maintained by me and open to modifications if needed)
+- Versions of key libraries:
+  {
+    "firebase": "^11.1.0",
+    "@vitejs/plugin-vue": "^2.3.3",
+    "@vue/test-utils": "^2.4.0-alpha.2",
+    "vue": "^3.2.25",
+    "vue-router": "^4.0.13",
+    "vuex": "^4.0.2",
+    "vitest": "^2.1.2"
+  }
+- Any other relevant context or constraints:
+  
+```
+
+## Assignment:
+```
+Please determine the root cause of the test failure based on the Source File, 
+Test File, and the Test Error message. If the error is caused by code within the 
+test, provide a corrected test snippet. If the error is due to the Source File, 
+please show how you would modify the Source File to fix the issue.
+
+Include a brief step-by-step explanation of:
+1. Why the error occurred.
+2. Why your fix addresses the problem.
+3. Any notable side effects or additional configuration needed.
+```
+
+Please complete the designated Assignment.
