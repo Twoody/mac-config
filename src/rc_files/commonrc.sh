@@ -37,6 +37,10 @@ alias myip="ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-
 alias wanip4='dig @resolver4.opendns.com myip.opendns.com +short -4'
 alias update-fork="git fetch upstream && git checkout master && git merge upstream/master"
 alias get-devices="arp -a"
+alias prompt-query="cp ~/install-scripts/templates/prompt-query-file.txt q.txt && vim q.txt"
+alias prompt-test="cp ~/install-scripts/templates/prompt-test-error.txt error.txt && vim error.txt"
+alias prompt-test-new="cp ~/install-scripts/templates/prompt-generate-test.txt test.txt && vim test.txt"
+alias prompt-diff="cp ~/install-scripts/templates/prompt-diff.txt d.txt && vim d.txt"
 
 # Get weather locally
 alias get-weather="curl wttr.in"
