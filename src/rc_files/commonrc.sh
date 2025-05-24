@@ -97,7 +97,7 @@ extract () {
 function gvue () {
 	# Skip over node_modules/ and .git/ + Follow sylinks on recursion;
 	#grep --exclude-dir={node_modules,.git} -Ri "$1" ./src/
-   grep --exclude-dir={node_modules,.git} -Ri "$1" ./
+   grep --exclude-dir={node_modules,.git,coverage,public,logs} --exclude=package-lock.json -Ri functions .
 	true
 }
 
