@@ -97,7 +97,7 @@ extract () {
 function gvue () {
 	# Skip over node_modules/ and .git/ + Follow sylinks on recursion;
 	#grep --exclude-dir={node_modules,.git} -Ri "$1" ./src/
-   grep --exclude-dir={node_modules,.git,coverage,public,logs} --exclude=package-lock.json -Ri functions .
+   grep --exclude-dir={node_modules,.git,coverage,public,logs} --exclude=diff --exclude=log --exclude=q.txt --exclude=package-lock.json -Ri "$1" .
 	true
 }
 
@@ -202,9 +202,58 @@ function garbage_collect_logs() {
   fi
 }
 
+function run_and_average_npm_test() {
+  local num_runs=10
+  local total_time=0
+  local successful_runs=0
+
+  echo "Starting $num_runs runs of 'npm run test' to calculate average time..."
+
+  for i in $(seq 1 $num_runs); do
+    echo "--- Run $i/$num_runs ---"
+    # Use command grouping { ... } 2>&1 | ... to redirect both stdout and stderr of the timed command
+    # and then grep for the 'total' time line.
+    # The 'time' command's output is usually sent to stderr, so we redirect stderr to stdout.
+    output=$( { time npm run test; } 2>&1 )
+    exit_code=$?
+
+    if [ $exit_code -eq 0 ]; then
+      # Extract the 'total' time. The format is 'X.YYYs total'.
+      # We look for the line ending with 'total' and extract the number before it.
+      total_duration=$(echo "$output" | grep 'total$' | awk '{print $(NF-1)}' | sed 's/s$//')
+
+      if [[ -n "$total_duration" ]]; then
+        # Convert to a common unit for summation (e.g., milliseconds for precision, or keep seconds and use bc)
+        # Using bc for floating point arithmetic
+        total_time=$(echo "$total_time + $total_duration" | bc)
+        successful_runs=$((successful_runs + 1))
+        echo "Run $i successful. Duration: ${total_duration}s"
+      else
+        echo "Warning: Could not extract total time from run $i. Output was:"
+        echo "$output"
+      fi
+    else
+      echo "Error: 'npm run test' failed on run $i with exit code $exit_code."
+      echo "Output was:"
+      echo "$output"
+      echo "Aborting averaging process."
+      return 1 # Indicate failure
+    fi
+  done
+
+  if [ $successful_runs -gt 0 ]; then
+    average_time=$(echo "scale=3; $total_time / $successful_runs" | bc)
+    echo "-------------------------------------"
+    echo "All $num_runs runs completed successfully."
+    echo "Average 'npm run test' time over $successful_runs successful runs: ${average_time}s"
+  else
+    echo "No successful runs were completed. Cannot calculate average time."
+    return 1
+  fi
+}
+
 # @parm $1 {string} filepath - Path to a txt file that contains the whole prompt
 # @retunrs {string} - The first ChatGPT reply from the Open AI route response
-
 function chatgpt() {
   # Paths and configuration
   KEY_FILE="$HOME/.chatgpt-tanner/key.txt"
