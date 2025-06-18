@@ -65,6 +65,7 @@ alias dockdown="docker-compose down --remove-orphans"
 alias dpsa='(echo "CONTAINER ID,IMAGE,COMMAND,STATUS,PORTS,NAMES" && docker ps -a --format "{{.ID}},{{.Image}},{{.Command}},{{.Status}},{{.Ports}},{{.Names}}")'
 alias dockstop='docker stop $(docker ps -q)'
 alias dockrm='docker rm $(docker ps -aq)'
+alias dockkill='dockstop && dockrm'
 
 
 ### Misc
@@ -97,7 +98,7 @@ extract () {
 function gvue () {
 	# Skip over node_modules/ and .git/ + Follow sylinks on recursion;
 	#grep --exclude-dir={node_modules,.git} -Ri "$1" ./src/
-   grep --exclude-dir={node_modules,.git,coverage,public,logs,build,.attic} --exclude=diff --exclude=log --exclude=q.txt --exclude=package-lock.json -Ri "$1" .
+   grep --exclude-dir={node_modules,.git,coverage,public,logs,build,.attic,playwright-report} --exclude=diff --exclude=log --exclude=q.txt --exclude=package-lock.json -Ri "$1" .
 	true
 }
 
