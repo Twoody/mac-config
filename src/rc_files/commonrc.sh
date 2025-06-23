@@ -339,3 +339,5 @@ function chatgpt() {
   # Perform garbage collection on the debug directory
   garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
 }
+
+terraform -install-autocomplete
