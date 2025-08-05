@@ -340,4 +340,45 @@ function chatgpt() {
   garbage_collect_logs "$DEBUG_DIR" "$MAX_DEBUG_FILES"
 }
 
-terraform -install-autocomplete
+# Function to delete active scratch orgs using sf CLI
+# WARNING: Only one prompt will be shown before deletion
+delete_active_scratch_orgs() {
+  local output
+  output=$(sf org list --all)
+
+  local usernames=()
+  while IFS= read -r line; do
+    if echo "$line" | grep -q "Scratch" && echo "$line" | grep -q "Active"; then
+      username=$(echo "$line" | awk -F '│' '{gsub(/^[ \t]+|[ \t]+$/, "", $5); print $5}')
+      if [[ -n "$username" ]]; then
+        usernames+=("$username")
+      fi
+    fi
+  done <<< "$output"
+
+  if [[ ${#usernames[@]} -eq 0 ]]; then
+    echo "No active scratch orgs found to delete."
+    return
+  fi
+
+  echo "The following active scratch orgs will be deleted:"
+  for u in "${usernames[@]}"; do
+    echo "  - $u"
+  done
+
+  # Use a portable prompt (works in both zsh and bash)
+  printf "Are you sure you want to delete these orgs? (y/n): "
+  read confirm
+
+  if [[ "$confirm" != "y" ]]; then
+    echo "Aborted."
+    return
+  fi
+
+  for u in "${usernames[@]}"; do
+    echo "Deleting $u..."
+    sf org delete scratch -o "$u" --no-prompt
+  done
+
+  echo "All deletions complete."
+}
