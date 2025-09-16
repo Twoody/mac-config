@@ -16,6 +16,8 @@ alias gp='git pull'
 #alias gch='git checkout' 
 alias gchl='git checkout @{-1}' 
 alias gitreset='git reset --hard head' 
+alias pr-ls='gh search prs --author @me --owner vacatia --state open --json repository,title,url --template "{{range .}}{{.repository.name}}: {{.title}} ({{.url}}){{\"\\n\"}}{{end}}"'
+
 
 ### Get the changes done by a Git commit ##
 gdc () {
