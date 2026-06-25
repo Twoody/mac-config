@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH="$HOME/install-scripts/bin:$PATH"
+
 ### Typos & short-hands
 alias q='exit'
 alias v='vim'
