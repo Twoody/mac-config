@@ -384,3 +384,19 @@ delete_active_scratch_orgs() {
 
   echo "All deletions complete."
 }
+
+# @example ecr-tags               # uses vacatia + us-west-2
+# @example ecr-tags myrepo        # uses myrepo + us-west-2
+# @example ecr-tags myrepo us-east-1
+ecr-tags() {
+    local repo="${1:-vacatia}"
+    local region="${2:-us-west-2}"
+
+    aws ecr list-images \
+        --repository-name "$repo" \
+        --region "$region" \
+        --filter tagStatus=TAGGED \
+        --query 'imageIds[*].imageTag' \
+        --output table
+}
+
