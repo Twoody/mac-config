@@ -32,6 +32,7 @@ source $UTILS
 source $VIM_INSTALL
 source $PROGRAMS_INSTALL
 source $APPLICATIONS_INSTALL
+source $CLAUDE_SETUP
 
 make_confirmation \
   "Cleanup the bottom dock bar?"\
@@ -52,6 +53,7 @@ then
   printf "\nRESUMING first-day-install PROCESS\n"
   install_bash
   setup_zsh
+  setup_claude
   install_vim
   # Install docker first to see if we can still install some CLI commands
   # Might need some `brew link --overwrite docker` too

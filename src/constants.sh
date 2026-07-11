@@ -9,6 +9,8 @@ SETUP=$INSTALL_DIR/workspace-setup.sh
 APPLICATIONS_INSTALL=$INSTALL_DIR/applications-install.sh
 PROGRAMS_INSTALL=$INSTALL_DIR/program-installs.sh
 VIM_INSTALL=$INSTALL_DIR/vim-installs.sh
+CLAUDE_SETUP=$INSTALL_DIR/claude-setup.sh
+CLAUDE_DIR=$WORKING_DIR/claude
 
 DOCK_LIST=~/Library/Preferences/com.apple.dock.plist
 APP_SONIC_WALL=/Applications/SonicWall\ Mobile\ Connect.app
