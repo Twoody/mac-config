@@ -11,6 +11,11 @@ PROGRAMS_INSTALL=$INSTALL_DIR/program-installs.sh
 VIM_INSTALL=$INSTALL_DIR/vim-installs.sh
 CLAUDE_SETUP=$INSTALL_DIR/claude-setup.sh
 CLAUDE_DIR=$WORKING_DIR/claude
+DISKGUARD_SETUP=$INSTALL_DIR/diskguard-setup.sh
+DISKGUARD_SCRIPT=$WORKING_DIR/bin/disk-guard.sh
+DISKGUARD_PLIST=$WORKING_DIR/launchd/com.twoody.diskguard.plist
+DISKGUARD_LABEL=com.twoody.diskguard
+LAUNCH_AGENTS=~/Library/LaunchAgents
 
 DOCK_LIST=~/Library/Preferences/com.apple.dock.plist
 APP_SONIC_WALL=/Applications/SonicWall\ Mobile\ Connect.app
