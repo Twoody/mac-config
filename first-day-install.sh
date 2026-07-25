@@ -33,6 +33,7 @@ source $VIM_INSTALL
 source $PROGRAMS_INSTALL
 source $APPLICATIONS_INSTALL
 source $CLAUDE_SETUP
+source $DISKGUARD_SETUP
 
 make_confirmation \
   "Cleanup the bottom dock bar?"\
@@ -54,6 +55,7 @@ then
   install_bash
   setup_zsh
   setup_claude
+  setup_diskguard
   install_vim
   # Install docker first to see if we can still install some CLI commands
   # Might need some `brew link --overwrite docker` too

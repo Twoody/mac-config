@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Machine-agnostic on purpose: launchd does NOT expand ~ or $VAR inside ProgramArguments,
+  so the job runs `sh -c` and lets the shell expand $HOME. That keeps this plist free of any
+  hardcoded /Users/<name> path, so it works as-is on every machine.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.twoody.diskguard</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/sh</string>
+		<string>-c</string>
+		<string>"$HOME/install-scripts/bin/disk-guard.sh"</string>
+	</array>
+	<key>StartInterval</key>
+	<integer>3600</integer>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/disk-guard.err</string>
+</dict>
+</plist>
