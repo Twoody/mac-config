@@ -35,3 +35,8 @@ Installed by `setup_diskguard` (runs in `first-day-install.sh`, or standalone:
 - Why it exists: a runaway third-party log writer (Reolink, ~23G in two hours) filled the disk
   to 99% and took Docker Desktop down with it — the engine crash-loops when its VM can't write,
   which looks nothing like a disk problem. Prune commands are in the script's header.
+
+`bin/disk-cleanup.sh` runs weekly (Monday 10:00, or on wake if the Mac was asleep) and
+**does delete**: Chrome `code_sign_clone` dirs older than a day (chrome-devtools-mcp leaves one
+per launch) and Docker images, stopped containers, networks and build cache older than 7 days.
+It never prunes Docker volumes. `setup_diskguard` installs it too. Log: `/tmp/disk-cleanup.log`.

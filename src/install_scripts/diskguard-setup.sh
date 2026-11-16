@@ -29,31 +29,43 @@ link_launch_agent ()
   return 0
 }
 
-# Idempotent: install the hourly disk guard. It only NOTIFIES - it never deletes -
-# warning when free space is low or a watched log dir has run away.
-#
-# Context: a runaway third-party log writer filled this disk to 99% and took Docker
-# Desktop down with it (the engine crash-loops when its VM cannot write). The guard
-# turns that from a multi-hour investigation into a notification.
+# Link a repo plist into ~/Library/LaunchAgents and (re)load it.
+# @param {path} $1 - Source plist inside the repo (absolute)
+# @param {string} $2 - launchd label (also the plist's basename)
+install_launch_agent ()
+{
+  source $CONSTANTS_FILE
+  link_launch_agent $1 $LAUNCH_AGENTS/$2.plist
+
+  # Reload so an updated plist takes effect; unload is expected to fail on first run.
+  launchctl unload $LAUNCH_AGENTS/$2.plist 2>/dev/null
+  if launchctl load $LAUNCH_AGENTS/$2.plist 2>/dev/null;
+    then
+      printf "\t$2 loaded\n"
+    else
+      printf "\tFAILED to load $2\n"
+      return 1
+  fi
+  return 0
+}
+
+# Idempotent: install two launchd jobs.
+# - Hourly disk guard: only NOTIFIES, never deletes. Warns when free space is low or a
+#   watched log dir has run away. Context: a runaway third-party log writer filled this disk
+#   to 99% and took Docker Desktop down with it (the engine crash-loops when its VM cannot
+#   write). The guard turns that from a multi-hour investigation into a notification.
+# - Weekly disk cleanup: DELETES stale Chrome code_sign_clone dirs and prunes Docker
+#   (never volumes). See bin/disk-cleanup.sh.
 setup_diskguard ()
 {
   source $CONSTANTS_FILE
-  printf "SETTING UP disk guard\n"
+  printf "SETTING UP disk guard + weekly cleanup\n"
 
   mkdir -p $LAUNCH_AGENTS
-  chmod +x $DISKGUARD_SCRIPT
+  chmod +x $DISKGUARD_SCRIPT $DISKCLEANUP_SCRIPT
 
-  link_launch_agent $DISKGUARD_PLIST $LAUNCH_AGENTS/$DISKGUARD_LABEL.plist
-
-  # Reload so an updated plist takes effect; unload is expected to fail on first run.
-  launchctl unload $LAUNCH_AGENTS/$DISKGUARD_LABEL.plist 2>/dev/null
-  if launchctl load $LAUNCH_AGENTS/$DISKGUARD_LABEL.plist 2>/dev/null;
-    then
-      printf "\t$DISKGUARD_LABEL loaded (runs hourly)\n"
-    else
-      printf "\tFAILED to load $DISKGUARD_LABEL\n"
-      return 1
-  fi
+  install_launch_agent $DISKGUARD_PLIST $DISKGUARD_LABEL || return 1
+  install_launch_agent $DISKCLEANUP_PLIST $DISKCLEANUP_LABEL || return 1
   return 0
 }
 
