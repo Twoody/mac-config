@@ -13,18 +13,21 @@
 # launchd starts jobs with a bare PATH; docker lives in Homebrew (Apple silicon or Intel).
 PATH=/opt/homebrew/bin:/usr/local/bin:$PATH
 
+# Free space in GiB to one decimal: a week's clones can free under 1G, which whole GB would hide.
 free_gb ()
 {
-	/bin/df -g /System/Volumes/Data | /usr/bin/awk 'NR==2 {print $4}'
+	/bin/df -k /System/Volumes/Data | /usr/bin/awk 'NR==2 {printf "%.1f", $4/1048576}'
 }
 
-echo "== $(date) start, ${free_gb_before:=$(free_gb)}G free"
+before=$(free_gb)
+echo "== $(date) start, ${before}G free"
 
 # getconf gives the per-user .../T/ dir; Chrome puts its clones in the sibling X/.
 CLONES="$(dirname "$(getconf DARWIN_USER_TEMP_DIR)")/X/com.google.Chrome.code_sign_clone"
 if [ -d "$CLONES" ];
 	then
-		/usr/bin/find "$CLONES" -mindepth 1 -maxdepth 1 -mtime +0 -exec rm -rf {} +
+		removed=$(/usr/bin/find "$CLONES" -mindepth 1 -maxdepth 1 -mtime +0 -print -exec rm -rf {} + | /usr/bin/wc -l | /usr/bin/tr -d ' ')
+		echo "removed ${removed} Chrome clones"
 fi
 
 # Errors out harmlessly (logged) when Docker Desktop isn't running.
@@ -33,4 +36,5 @@ if command -v docker >/dev/null;
 		docker system prune -af --filter until=168h
 fi
 
-echo "== $(date) done, $(free_gb)G free (was ${free_gb_before}G)"
+after=$(free_gb)
+echo "== $(date) done, ${after}G free, freed $(echo "$before $after" | /usr/bin/awk '{printf "%.1f", $2-$1}')G"
