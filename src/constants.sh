@@ -15,6 +15,9 @@ DISKGUARD_SETUP=$INSTALL_DIR/diskguard-setup.sh
 DISKGUARD_SCRIPT=$WORKING_DIR/bin/disk-guard.sh
 DISKGUARD_PLIST=$WORKING_DIR/launchd/com.twoody.diskguard.plist
 DISKGUARD_LABEL=com.twoody.diskguard
+DISKCLEANUP_SCRIPT=$WORKING_DIR/bin/disk-cleanup.sh
+DISKCLEANUP_PLIST=$WORKING_DIR/launchd/com.twoody.diskcleanup.plist
+DISKCLEANUP_LABEL=com.twoody.diskcleanup
 LAUNCH_AGENTS=~/Library/LaunchAgents
 
 DOCK_LIST=~/Library/Preferences/com.apple.dock.plist
